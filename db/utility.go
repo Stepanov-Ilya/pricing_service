@@ -3,6 +3,7 @@ package db
 import (
 	"purple_hack_tree/service"
 	"sort"
+	"sync"
 )
 
 func GetPrice(request service.Request) service.Response {
@@ -25,3 +26,14 @@ func GetPrice(request service.Request) service.Response {
 
 	return response
 }
+
+func AddStorage(storage service.Storage) {
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	AddBaseline()
+
+
+}
+
+
