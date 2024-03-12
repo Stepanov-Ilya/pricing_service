@@ -1,23 +1,33 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 )
 
-func GetCategoriesTree() *CategoryNode {
+func GetCategoriesTree(collection mongo.Collection) *CategoryNode {
 	// Создаем корневую категорию - ROOT
 	rootNode := NewCategory("ROOT")
 
-	for category, subCategories := range rawCategories {
+	for category, subCategories := range RawCategories {
 		categoryNode := NewCategory(category)
 
 		for _, subCategory := range subCategories {
 			subCategoryNode := NewCategory(subCategory)
-			categoryNode.AddChild(subCategoryNode)
+			categoryNode.AddChild(subCategoryNode, collection)
 		}
 
-		rootNode.AddChild(categoryNode)
+		rootNode.AddChild(categoryNode, collection)
 	}
+
+	insertResult, err := collection.InsertOne(context.TODO(), rootNode)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 
 	return rootNode
 }
@@ -42,8 +52,15 @@ func NewCategory(name string) *CategoryNode {
 }
 
 // AddChild Добавляет дочернюю локацию к родительской категории
-func (l *CategoryNode) AddChild(child *CategoryNode) {
+func (l *CategoryNode) AddChild(child *CategoryNode, collection mongo.Collection) {
 	l.Children = append(l.Children, child)
+
+	insertResult, err := collection.InsertOne(context.TODO(), child)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 }
 
 // PrintTree Рекурсивно выводит дерево категорий
@@ -63,7 +80,7 @@ func generateCategoryIndent(indent int) string {
 	return result
 }
 
-var rawCategories = map[string][]string{
+var RawCategories = map[string][]string{
 	"Бытовая электроника":           {"Товары для компьютера", "Фототехника", "Телефоны", "Планшеты и электронные книги", "Оргтехника и расходники", "Ноутбуки", "Настольные компьютеры", "Игры, приставки и программы", "Аудио и видео"},
 	"Готовый бизнес и оборудование": {"Готовый бизнес", "Оборудование для бизнеса"},
 	"Для дома и дачи":               {"Мебель и интерьер", "Ремонт и строительство", "Продукты питания", "Растения", "Бытовая техника", "Посуда и товары для кухни"},

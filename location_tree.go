@@ -1,22 +1,32 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 )
 
-func GetLocationsTree() *LocationNode {
+func GetLocationsTree(collection mongo.Collection) *LocationNode {
 	// Создаем корневую локацию - Все регионы
 	allRegions := NewLocation("Все регионы")
 
-	for region, cities := range rawLocations {
+	for region, cities := range RawLocations {
 		regionNode := NewLocation(region)
 
 		for _, city := range cities {
 			cityNode := NewLocation(city)
-			regionNode.AddChild(cityNode)
+			regionNode.AddChild(cityNode, collection)
 		}
-		allRegions.AddChild(regionNode)
+		allRegions.AddChild(regionNode, collection)
 	}
+
+	insertResult, err := collection.InsertOne(context.TODO(), allRegions)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 
 	return allRegions
 }
@@ -41,8 +51,15 @@ func NewLocation(name string) *LocationNode {
 }
 
 // AddChild Добавляет дочернюю локацию к родительской локации
-func (l *LocationNode) AddChild(child *LocationNode) {
+func (l *LocationNode) AddChild(child *LocationNode, collection mongo.Collection) {
 	l.Children = append(l.Children, child)
+
+	insertResult, err := collection.InsertOne(context.TODO(), child)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 }
 
 // PrintTree Рекурсивно выводит дерево локаций
@@ -62,7 +79,7 @@ func generateLocationIndent(indent int) string {
 	return result
 }
 
-var rawLocations = map[string][]string{
+var RawLocations = map[string][]string{
 	"Адыгея":                  {"Тахтамукай", "Тлюстенхабль", "Хакуринохабль", "Хатукай", "Ходзь", "Энем", "Яблоновский", "Ханская", "Тульский", "Абадзехская", "Адыгейск", "Белое", "Блечепсин", "Вольное", "Гиагинская", "Дондуковская", "Каменномостский", "Кошехабль", "Красногвардейское", "Краснооктябрьский", "Кужорская", "Майкоп", "Натырбово", "Понежукай", "Северо-Восточные Сады"},
 	"Алтайский край":          {"Крутиха", "Курья", "Кытманово", "Лебяжье", "Леньки", "Малиновое Озеро", "Мамонтово", "при ст. Озерки", "Троицкое", "Затон", "Нагорный", "Новосиликатный", "Сорокино", "Калманка", "Славгородское", "Павловск", "Озерки", "Новые Зори", "Баево", "Веселоярск", "Первомайское", "Яровое", "Южный", "Шипуново", "Шелаболиха", "Черемное", "Чарышское", "Целинное", "Хабары", "Усть-Чарышская Пристань", "Усть-Калманка", "Угловское", "Тюменцево", "Топчиха", "Тогул", "Тальменка", "Табуны", "Степное Озеро", "Староалейское", "Сростки", "Солтон", "Солонешное", "Соколово", "Советское", "Смоленское", "Славгород", "Сибирский", "Рубцовск", "Кулунда", "Романово", "Родино", "Ребриха", "Поспелиха", "Первомайское", "Панкрушиха", "Новоегорьевское", "Новоалтайск", "Новичиха", "Налобиха", "Михайловское", "Алейск", "Алтайское", "Барнаул", "Белокуриха", "Белоярск", "Березовка", "Бийск", "Благовещенка", "Боровиха", "Бурла", "Быстрый Исток", "Верх-Катунское", "Власиха", "Волчиха", "Горняк", "Ельцовка", "Завьялово", "Залесово", "Заринск", "Змеиногорск", "Зональное", "Зудилово", "Камень-на-Оби", "Ключи", "Косиха", "Красногорское", "Краснощеково"},
 	"Амурская область":        {"Архара", "Белогорск", "Серышево", "Шимановск", "Тында", "Тамбовка", "Екатеринославка", "Возжаевка", "Благовещенск", "Сковородино", "Магдагачи", "Новобурейский", "Прогресс", "Райчихинск", "Свободный", "Зея", "Завитинск"},
