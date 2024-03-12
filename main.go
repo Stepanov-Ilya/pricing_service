@@ -1,11 +1,9 @@
 package main
 
-import (
-	"purple_hack_tree/service"
-)
+import "purple_hack_tree/db"
 
 // Набросок деревьев и сегментации пользователей для реализации платформы ценообразования
 // Деревья можно использовать as-is или переделать под себя, наработки даны просто как пример
 func main() {
-	service.Run()
+	db.CreateProcessBd()
 }
