@@ -6,6 +6,9 @@ import (
 	"sync"
 )
 
+var wg sync.WaitGroup
+var STORAGE CurrentStorage
+
 func GetPrice(request service.Request) service.Response {
 	discountIds := GetSegmentsByUserID(request.UserId)
 	sort.Slice(discountIds, func(i, j int) bool { return discountIds[i] > discountIds[j] })
@@ -27,13 +30,34 @@ func GetPrice(request service.Request) service.Response {
 	return response
 }
 
-func AddStorage(storage service.Storage) {
-	var wg sync.WaitGroup
+func UpdateStorage(storage service.Storage) {
 
 	wg.Add(1)
-	AddBaseline()
+	wg.Add(1)
+	go AddBaseline(storage.Baseline)
+	go AddDiscounts(storage.Discounts)
 
-
+	wg.Wait()
 }
 
+func UpdateBaseline(lines []service.Matrix) {
+	//Todo create baseline
+	//Todo add data
+	//STORAGE.Baseline = CreateBaseline()
+	//AddBaselineData(lines)
+	defer wg.Done()
+}
+
+func UpdateDiscounts(discounts map[uint64][]service.Matrix) {
+	//STORAGE.Discounts = make(map[uint64]uint64, 1)
+	//wg.add(len(discounts))
+	//AddDiscountData()
+	for discountId, lines := range discounts {
+		//Todo create discount
+		//STORAGE.Discounts[discountId] = CreateDiscount()
+		//go AddDiscountData(lines)
+	}
+
+	defer wg.Done()
+}
 

@@ -20,15 +20,15 @@ type Response struct {
 	UserSegmentId uint64 `json:"user_segment_id"`
 }
 
-type Storage struct {
-	Baseline  []Line            `json:"baseline"`
-	Discounts map[uint64][]Line `json:"discounts"`
-}
-
-type Line struct {
+type Matrix struct {
 	LocationId      uint64 `json:"location_id"`
 	MicroCategoryId uint64 `json:"microcategory_id"`
 	Price           uint64 `json:"price"`
+}
+
+type Discounts struct {
+	Segment string `json:"segment"`
+	Matrix  Matrix `json:"matrix"`
 }
 
 func GetPrice(c echo.Context) error {
@@ -45,23 +45,39 @@ func GetPrice(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func GetCategory(c echo.Context) error {
-	category := c.QueryParam("category")
-	return c.Render(http.StatusOK, "template_category.html", category)
+func GetData(c echo.Context) error {
+	// Todo Get category from database
+	category := db.GetData()
+
+	return c.JSON(http.StatusOK, category)
 }
 
-func GetLocation(c echo.Context) error {
-	location := c.QueryParam("location")
-	return c.Render(http.StatusOK, "template_location.html", location)
-}
-
-func GetStorage(c echo.Context) error {
-	var storage Storage
-	if err := c.Bind(&storage); err != nil {
+func AddCategory(c echo.Context) error {
+	var matrix Matrix
+	if err := c.Bind(&matrix); err != nil {
 		return c.String(http.StatusOK, "Invalid data")
 	}
 
-	db.AddStorage(storage)
+	//Todo add to local database
 
-	return c.String(http.StatusOK, "Success add storage")
+	return c.String(http.StatusOK, "Success add category")
+}
+
+func AddLocation(c echo.Context) error {
+	var discounts Discounts
+	if err := c.Bind(&discounts); err != nil {
+		return c.String(http.StatusOK, "Invalid data")
+	}
+
+	//Todo add to local database
+
+	return c.String(http.StatusOK, "Success add location")
+}
+
+func UpdateStorage(c echo.Context) error {
+	// Todo relocate data from temporarily database to public matrix
+
+	// Drop temporarily databases
+
+	return c.String(http.StatusOK, "Success update storage")
 }
