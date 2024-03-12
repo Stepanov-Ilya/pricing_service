@@ -1,6 +1,6 @@
-package main
+package db
 
-var db = map[int64][]int64{
+var db = map[uint64][]uint64{
 	2100: {156, 278},
 	2200: {168, 290, 412},
 	2300: {180},
@@ -25,12 +25,10 @@ var db = map[int64][]int64{
 	4200: {396, 518, 640, 262},
 }
 
-func GetSegmentsByUserIDs(userIDs []int64) map[int64][]int64 {
-	result := make(map[int64][]int64, len(userIDs))
+func GetSegmentsByUserID(userID uint64) []uint64 {
+	result := make([]uint64, 0)
 
-	for _, userID := range userIDs {
-		result[userID] = db[userID]
-	}
+	result = db[userID]
 
 	return result
 }
