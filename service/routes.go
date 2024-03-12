@@ -52,7 +52,7 @@ func GetData(c echo.Context) error {
 	return c.JSON(http.StatusOK, category)
 }
 
-func AddCategory(c echo.Context) error {
+func AddBaseline(c echo.Context) error {
 	var matrix Matrix
 	if err := c.Bind(&matrix); err != nil {
 		return c.String(http.StatusOK, "Invalid data")
@@ -63,7 +63,7 @@ func AddCategory(c echo.Context) error {
 	return c.String(http.StatusOK, "Success add category")
 }
 
-func AddLocation(c echo.Context) error {
+func AddDiscounts(c echo.Context) error {
 	var discounts Discounts
 	if err := c.Bind(&discounts); err != nil {
 		return c.String(http.StatusOK, "Invalid data")

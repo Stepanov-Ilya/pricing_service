@@ -17,8 +17,8 @@ func Run() {
 
 	e.POST("/price", GetPrice)
 	e.GET("/data", GetData)
-	e.POST("/send/category", AddCategory)
-	e.POST("/send/location", AddLocation)
+	e.POST("/send/baseline", AddBaseline)
+	e.POST("/send/discounts", AddDiscounts)
 	e.POST("/update/storage", UpdateStorage)
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
