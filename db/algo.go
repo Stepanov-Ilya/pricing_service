@@ -19,7 +19,17 @@ func Update_pids_in_mongo(cat_col mongo.Collection, loc_col mongo.Collection, ma
 	for _, line := range matrix {
 		category_id = line[0]
 		node := Find_node_in_mongo(category_id, cat_col)
-		BFS(node, cat_col)
+		BFS(*node, cat_col)
+	}
+
+	// Заполняем локации
+	sort.Slice(matrix, func(i, j int) bool {
+		return matrix[1][i] < matrix[1][j]
+	})
+	for _, line := range matrix {
+		location_id = line[1]
+		node := Find_node_in_mongo(location_id, loc_col)
+		BFS(*node, loc_col)
 	}
 }
 
@@ -85,6 +95,6 @@ func change_pid(collection mongo.Collection, id int64, pid int64) {
 	}
 }
 
-func GetData(category_id int64, location_id int64, discount_segments []int) {
+func GetData(category_id int64, location_id int64, discount_segments []int) int64 {
 
 }
