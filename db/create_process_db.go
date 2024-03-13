@@ -12,7 +12,7 @@ const (
 
 func CreateProcessBd() {
 
-	// Открытие соединения с базой данных PostgreSQL
+	// Открытие соединения с базой данных
 	db, err := sql.Open("mysql", connection)
 	if err != nil {
 		panic(err)

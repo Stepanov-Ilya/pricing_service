@@ -57,5 +57,7 @@ func UpdateStorage(c echo.Context) error {
 	db.ClearBaseline()
 	db.ClearDiscounts()
 	db.ClearDiscountsSegments()
+	//GetArrayOfBaseline()
+	//GetArrayOfDiscount()
 	return c.String(http.StatusOK, "Success update storage")
 }

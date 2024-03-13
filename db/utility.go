@@ -364,3 +364,61 @@ func UpdateDiscountsMatrix(segment uint64) {
 
 	defer wg.Done()
 }
+
+func GetArrayOfBaseline() ([][]int64, error) {
+	db, err := sql.Open("mysql", connection)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	var data [][]int64
+
+	rows, err := db.Query("SELECT microcategory, location, price FROM baseline_matrix_" + strconv.FormatUint(STORAGE.Baseline, 10))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var microcategory, location, price int64
+		if err := rows.Scan(microcategory, location, price); err != nil {
+			return nil, err
+		}
+		data = append(data, []int64{microcategory, location, price})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func GetArrayOfDiscount(dp uint64) ([][]int64, error) {
+	db, err := sql.Open("mysql", connection)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	var data [][]int64
+
+	rows, err := db.Query("SELECT microcategory, location, price FROM dicount_matrix_" + strconv.FormatUint(dp, 10))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var microcategory, location, price int64
+		if err := rows.Scan(microcategory, location, price); err != nil {
+			return nil, err
+		}
+		data = append(data, []int64{microcategory, location, price})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
