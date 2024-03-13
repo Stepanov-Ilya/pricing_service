@@ -7,7 +7,7 @@ import (
 	"sort"
 )
 
-func Update_pids_in_mongo(cat_col mongo.Collection, loc_col mongo.Collection, matrix [][3]int64) {
+func Update_pids_in_mong(cat_col mongo.Collection, loc_col monogo.Collection, matrix [][3]int64) {
 	// Заполнить корневые каталоги
 	var category_id, location_id int64
 

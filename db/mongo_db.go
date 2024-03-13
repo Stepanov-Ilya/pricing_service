@@ -9,6 +9,12 @@ import (
 	"log"
 )
 
+var MONGO_STORAGE struct {
+	id            int64
+	Category_name string
+	Location_name string
+}
+
 func Open_bd() mongo.Client {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
 	if err != nil {

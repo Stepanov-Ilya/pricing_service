@@ -41,24 +41,6 @@ type Node struct {
 	Children []*Node
 }
 
-func (n *Node) Less(other *Node) bool {
-	return n.ID < other.ID
-}
-
-func (n *Node) Equal(other *Node) bool {
-	return n.ID == other.ID
-}
-
-func NewLocation(name string) *Node {
-	locationID++
-	return &Node{
-		ID:       locationID,
-		Name:     name,
-		PID:      0,
-		Children: []*Node{},
-	}
-}
-
 func GetCategoriesTree(collection mongo.Collection) *Node {
 	// Создаем корневую категорию - ROOT
 	rootNode := NewCategory("ROOT")
