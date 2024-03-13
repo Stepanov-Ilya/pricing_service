@@ -36,6 +36,7 @@ func GetPrice(request structures.Request) structures.Response {
 }
 
 func UpdateStorage() {
+
 	ClearStorageSegments()
 	wg.Add(1)
 	wg.Add(1)
