@@ -21,12 +21,12 @@ func GetPrice(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func GetData(c echo.Context) error {
-	// Todo Get category from database
-	category := db.GetData()
-
-	return c.JSON(http.StatusOK, category)
-}
+//func GetData(c echo.Context) error {
+//	// Todo Get category from database
+//	category := db.GetData()
+//
+//	return c.JSON(http.StatusOK, category)
+//}
 
 func AddBaseline(c echo.Context) error {
 	var matrix structures.Matrix
@@ -34,9 +34,9 @@ func AddBaseline(c echo.Context) error {
 		return c.String(http.StatusOK, "Invalid data")
 	}
 
-	//Todo add to local database
+	db.AddProcessBaseline(matrix.MicroCategoryId, matrix.LocationId, matrix.Price)
 
-	return c.String(http.StatusOK, "Success add category")
+	return c.String(http.StatusOK, "Success add to baseline")
 }
 
 func AddDiscounts(c echo.Context) error {
@@ -45,15 +45,17 @@ func AddDiscounts(c echo.Context) error {
 		return c.String(http.StatusOK, "Invalid data")
 	}
 
-	//Todo add to local database
+	db.AddProcessDiscounts(discounts.Segment, discounts.MicroCategoryId, discounts.LocationId, discounts.Price)
 
-	return c.String(http.StatusOK, "Success add location")
+	return c.String(http.StatusOK, "Success add to discounts")
 }
 
 func UpdateStorage(c echo.Context) error {
-	// Todo relocate data from temporarily database to public matrix
 
-	// Drop temporarily databases
+	db.UpdateStorage()
 
+	db.ClearBaseline()
+	db.ClearDiscounts()
+	db.ClearDiscountsSegments()
 	return c.String(http.StatusOK, "Success update storage")
 }

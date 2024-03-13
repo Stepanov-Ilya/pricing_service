@@ -3,6 +3,7 @@ module purple_hack_tree
 go 1.20
 
 require (
+	github.com/go-sql-driver/mysql v1.8.0
 	github.com/labstack/echo/v4 v4.11.4
 	go.mongodb.org/mongo-driver v1.14.0
 )
@@ -10,10 +11,10 @@ require (
 require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
-	github.com/lib/pq v1.10.9
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
