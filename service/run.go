@@ -16,7 +16,7 @@ func Run() {
 	//e.Renderer = renderer
 
 	e.POST("/price", GetPrice)
-	e.GET("/data", GetData)
+	//e.GET("/data", GetData)
 	e.POST("/send/baseline", AddBaseline)
 	e.POST("/send/discounts", AddDiscounts)
 	e.POST("/update/storage", UpdateStorage)

@@ -21,6 +21,8 @@ type Matrix struct {
 }
 
 type Discounts struct {
-	Segment string `json:"segment"`
-	Matrix  Matrix `json:"matrix"`
+	Segment         uint64 `json:"segment"`
+	LocationId      uint64 `json:"location_id"`
+	MicroCategoryId uint64 `json:"microcategory_id"`
+	Price           uint64 `json:"price"`
 }
