@@ -32,13 +32,13 @@ func GetPrice(request structures.Request) structures.Response {
 }
 
 func UpdateStorage() {
-	//TODO
-	//wg.Add(1)
-	//wg.Add(1)
-	//go AddBaseline(storage.Baseline)
-	//go AddDiscounts(storage.Discounts)
-	//
-	//wg.Wait()
+	wg.Add(1)
+	wg.Add(1)
+
+	go AddBaseline(storage.Baseline)
+	go AddDiscounts(storage.Discounts)
+
+	wg.Wait()
 }
 
 func UpdateBaseline(lines []structures.Matrix) {

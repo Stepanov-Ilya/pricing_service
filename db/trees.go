@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func GetLocationsTree(collection mongo.Collection) *LocationNode {
+func GetLocationsTree(collection mongo.Collection) *Node {
 	// Создаем корневую локацию - Все регионы
 	allRegions := NewLocation("Все регионы")
 
@@ -31,27 +31,72 @@ func GetLocationsTree(collection mongo.Collection) *LocationNode {
 	return allRegions
 }
 
-var locationID int64
+var locationID int64 = 1
+var categoryID int64 = 1
 
-// LocationNode представляет собой узел дерева локаций
-type LocationNode struct {
+type Node struct {
 	ID       int64
 	Name     string
-	Children []*LocationNode
+	PID      int64
+	Children []*Node
 }
 
-// NewLocation Создает новый узел локации
-func NewLocation(name string) *LocationNode {
+func (n *Node) Less(other *Node) bool {
+	return n.ID < other.ID
+}
+
+func (n *Node) Equal(other *Node) bool {
+	return n.ID == other.ID
+}
+
+func NewLocation(name string) *Node {
 	locationID++
-	return &LocationNode{
+	return &Node{
 		ID:       locationID,
 		Name:     name,
-		Children: []*LocationNode{},
+		PID:      0,
+		Children: []*Node{},
 	}
 }
 
-// AddChild Добавляет дочернюю локацию к родительской локации
-func (l *LocationNode) AddChild(child *LocationNode, collection mongo.Collection) {
+func GetCategoriesTree(collection mongo.Collection) *Node {
+	// Создаем корневую категорию - ROOT
+	rootNode := NewCategory("ROOT")
+
+	for category, subCategories := range RawCategories {
+		categoryNode := NewCategory(category)
+
+		for _, subCategory := range subCategories {
+			subCategoryNode := NewCategory(subCategory)
+			categoryNode.AddChild(subCategoryNode, collection)
+		}
+
+		rootNode.AddChild(categoryNode, collection)
+	}
+
+	insertResult, err := collection.InsertOne(context.TODO(), rootNode)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
+
+	return rootNode
+}
+
+// NewCategory Создает новый узел локации
+func NewCategory(name string) *Node {
+	categoryID++
+	return &Node{
+		ID:       categoryID,
+		Name:     name,
+		PID:      0,
+		Children: []*Node{},
+	}
+}
+
+// AddChild Добавляет дочернюю локацию к родительской категории
+func (l *Node) AddChild(child *Node, collection mongo.Collection) {
 	l.Children = append(l.Children, child)
 
 	insertResult, err := collection.InsertOne(context.TODO(), child)
@@ -60,23 +105,6 @@ func (l *LocationNode) AddChild(child *LocationNode, collection mongo.Collection
 	}
 
 	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
-}
-
-// PrintTree Рекурсивно выводит дерево локаций
-func (l *LocationNode) PrintTree(indent int) {
-	fmt.Printf("%s%d - %s\n", generateLocationIndent(indent), l.ID, l.Name)
-	for _, child := range l.Children {
-		child.PrintTree(indent + 2)
-	}
-}
-
-// Генерирует отступ для вывода
-func generateLocationIndent(indent int) string {
-	result := ""
-	for i := 0; i < indent; i++ {
-		result += " "
-	}
-	return result
 }
 
 var RawLocations = map[string][]string{
@@ -164,4 +192,17 @@ var RawLocations = map[string][]string{
 	"Чукотский АО":            {"Билибино", "Угольные Копи", "Певек", "Анадырь"},
 	"Ямало-Ненецкий АО":       {"Муравленко", "Уренгой", "Ханымей", "Харп", "Мужи", "Лабытнанги", "Красноселькуп", "Яр-Сале", "Коротчаево", "Губкинский", "Тарко-Сале", "Вынгапуровский", "Салехард", "Пурпе", "Пангоды", "Тазовский", "Ноябрьск", "Новый Уренгой", "Надым"},
 	"Ярославская область":     {"Туношна", "Семибратово", "Рыбинск", "Ярославль", "Ростов", "Кузнечиха", "Большое Село", "Борисоглебский", "Брейтово", "Бурмакино", "Волга", "Гаврилов-Ям", "Данилов", "Дубки", "Ишня", "Константиновский", "Красные Ткачи", "Лесная Поляна", "Любим", "Мышкин", "Некрасовское", "Новый Некоуз", "Переславль-Залесский", "Петровское", "Пошехонье", "Пречистое", "Углич", "Тутаев"},
+}
+
+var RawCategories = map[string][]string{
+	"Бытовая электроника":           {"Товары для компьютера", "Фототехника", "Телефоны", "Планшеты и электронные книги", "Оргтехника и расходники", "Ноутбуки", "Настольные компьютеры", "Игры, приставки и программы", "Аудио и видео"},
+	"Готовый бизнес и оборудование": {"Готовый бизнес", "Оборудование для бизнеса"},
+	"Для дома и дачи":               {"Мебель и интерьер", "Ремонт и строительство", "Продукты питания", "Растения", "Бытовая техника", "Посуда и товары для кухни"},
+	"Животные":                      {"Другие животные", "Товары для животных", "Птицы", "Аквариум", "Кошки", "Собаки"},
+	"Личные вещи":                   {"Детская одежда и обувь", "Одежда, обувь, аксессуары", "Товары для детей и игрушки", "Часы и украшения", "Красота и здоровье"},
+	"Недвижимость":                  {"Недвижимость за рубежом", "Квартиры", "Коммерческая недвижимость", "Гаражи и машиноместа", "Земельные участки", "Дома, дачи, коттеджи", "Комнаты"},
+	"Работа":                        {"Резюме", "Вакансии"},
+	"Транспорт":                     {"Автомобили", "Запчасти и аксессуары", "Грузовики и спецтехника", "Водный транспорт", "Мотоциклы и мототехника"},
+	"Услуги":                        {"Предложения услуг"},
+	"Хобби и отдых":                 {"Охота и рыбалка", "Спорт и отдых", "Коллекционирование", "Книги и журналы", "Велосипеды", "Музыкальные инструменты", "Билеты и путешествия"},
 }

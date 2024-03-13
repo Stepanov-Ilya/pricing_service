@@ -9,7 +9,7 @@ import (
 	"log"
 )
 
-func open_bd() mongo.Client {
+func Open_bd() mongo.Client {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
 	if err != nil {
 		log.Fatal(err)
@@ -28,7 +28,7 @@ func open_bd() mongo.Client {
 	return *client
 }
 
-func close_db(client mongo.Client) {
+func Close_db(client mongo.Client) {
 	err := client.Disconnect(context.TODO())
 
 	if err != nil {
@@ -37,24 +37,25 @@ func close_db(client mongo.Client) {
 	fmt.Println("Connection to MongoDB closed.")
 }
 
-// Запускать один раз !!
-func Start_database() {
-	client := open_bd()
+// Заполняет БД (c нуля)
+func Start_database(client mongo.Client) {
 
 	loc_col := client.Database("main_db").Collection("LocationNode")
 	cat_col := client.Database("main_db").Collection("CategoryNode")
+
+	Clean_all(*loc_col)
+	Clean_all(*cat_col)
+
 	GetLocationsTree(*loc_col)  // Загрузка стартовых даннных в бд (запускать один раз!)
 	GetCategoriesTree(*cat_col) // Загрузка стартовых даннных в бд (запускать один раз!)
 
-	close_db(client)
 }
 
 func read_db(collection mongo.Collection) {
 	options := options.Find()
-	//options.SetLimit(2)
 	filter := bson.D{}
 
-	var results []*LocationNode
+	var results []*Node
 
 	cur, err := collection.Find(context.TODO(), filter, options)
 	if err != nil {
@@ -62,9 +63,9 @@ func read_db(collection mongo.Collection) {
 	}
 
 	for cur.Next(context.TODO()) {
-		var elem LocationNode
+		var elem Node
 		err := cur.Decode(&elem)
-		if err != nil {
+		if err == nil {
 			log.Fatal(err)
 		}
 
@@ -86,18 +87,22 @@ func read_db(collection mongo.Collection) {
 	cur.Close(context.TODO())
 }
 
-func find(filter bson.D, collection mongo.Collection) {
+func Find_node_in_mongo(id int64, collection mongo.Collection) *Node {
+	var locationNode *Node
+	filter := bson.D{{"id", id}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&locationNode)
 
-	cursor, _ := collection.Find(context.TODO(), filter)
-	var results []LocationNode
-
-	var err error
-	if err = cursor.All(context.TODO(), &results); err != nil {
-		panic(err)
+	if err != nil {
+		log.Fatal(err)
 	}
+	return locationNode
+}
 
-	for _, result := range results {
-		res, _ := bson.MarshalExtJSON(result, false, false)
-		fmt.Println(string(res))
+func Clean_all(collection mongo.Collection) {
+	filter := bson.D{}
+	deleteResult, err := collection.DeleteMany(context.TODO(), filter)
+	if err != nil {
+		log.Fatal(err)
 	}
+	fmt.Printf("All have been cleaned", deleteResult.DeletedCount)
 }
