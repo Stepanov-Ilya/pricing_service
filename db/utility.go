@@ -43,7 +43,7 @@ func GetPrice(request structures.Request) (uint64, uint64, uint64, uint64, uint6
 	price, category, location := SearchInMongoBaseline(int64(request.MicroCategoryId), int64(request.LocationId), *cat_col, *loc_col)
 
 	Close_db(client)
-	return uint64(price), uint64(category), uint64(location), STORAGE.Baseline, -1
+	return uint64(price), uint64(category), uint64(location), STORAGE.Baseline, 0
 
 }
 
