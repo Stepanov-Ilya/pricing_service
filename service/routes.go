@@ -25,12 +25,17 @@ func GetPrice(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-//func GetData(c echo.Context) error {
-//	// Todo Get category from database
-//	category := db.GetData()
-//
-//	return c.JSON(http.StatusOK, category)
-//}
+func GetData(c echo.Context) error {
+
+	category := db.ReturnJSONForSelector_Category()
+	location := db.ReturnJSONForSelector_Location()
+
+	selectors := structures.Selectors{
+		Category: category,
+		Location: location,
+	}
+	return c.JSON(http.StatusOK, selectors)
+}
 
 func AddBaseline(c echo.Context) error {
 	var matrix structures.Matrix

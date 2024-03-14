@@ -33,9 +33,6 @@ type Selector struct {
 }
 
 type Selectors struct {
-	value []Selector `json:"value"`
-}
-
-func CreateNewSelectors(s []Selector) *Selectors {
-	return &Selectors{value: s}
+	Category []Selector `json:"category"`
+	Location []Selector `json:"location"`
 }

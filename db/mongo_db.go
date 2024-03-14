@@ -109,7 +109,7 @@ func Start_database(client mongo.Client) {
 
 }
 
-func ReturnJSONForSelector_Location() structures.Selectors {
+func ReturnJSONForSelector_Location() []structures.Selector {
 	var selectors []structures.Selector
 	client := Open_bd()
 
@@ -146,9 +146,9 @@ func ReturnJSONForSelector_Location() structures.Selectors {
 	cur.Close(context.TODO())
 	Close_db(client)
 
-	return *structures.CreateNewSelectors(selectors)
+	return selectors
 }
-func ReturnJSONForSelector_Category() structures.Selectors {
+func ReturnJSONForSelector_Category() []structures.Selector {
 	var selectors []structures.Selector
 	client := Open_bd()
 
@@ -185,7 +185,7 @@ func ReturnJSONForSelector_Category() structures.Selectors {
 	cur.Close(context.TODO())
 	Close_db(client)
 
-	return *structures.CreateNewSelectors(selectors)
+	return selectors
 }
 
 func Find_node_in_mongo(id int64, collection mongo.Collection) *Node {
