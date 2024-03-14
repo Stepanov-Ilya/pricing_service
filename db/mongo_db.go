@@ -27,8 +27,8 @@ func NewMongoBaseline() *MONGO_COLLECTION {
 	mg := &MONGO_COLLECTION{
 		id:            MONGO_ID,
 		segment:       0,
-		Location_name: "location_" + strconv.FormatInt(segment, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
-		Category_name: "category_" + strconv.FormatInt(segment, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
+		Location_name: "location_" + strconv.FormatInt(0, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
+		Category_name: "category_" + strconv.FormatInt(0, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
 	}
 	MONGO_COLLECTIONS = append(MONGO_COLLECTIONS, mg)
 	return mg
