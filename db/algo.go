@@ -94,7 +94,7 @@ func change_pid(collection mongo.Collection, id int64, pid int64) {
 	}
 }
 
-func SearchInMongoBaseline(category_id int64, location_id int64, cat_col mongo.Collection, loc_col mongo.Collection) int64 {
+func SearchInMongoBaseline(category_id int64, location_id int64, cat_col mongo.Collection, loc_col mongo.Collection) (int64, int64, int64) {
 	cp := Find_node_in_mongo(category_id, cat_col)
 	lp := Find_node_in_mongo(location_id, loc_col)
 	var price int64
@@ -102,17 +102,17 @@ func SearchInMongoBaseline(category_id int64, location_id int64, cat_col mongo.C
 		for cp.PID != 0 {
 			price = SelectBaseline(cp.ID, lp.ID)
 			if price > 0 {
-				return price
+				return price, cp.ID, lp.ID
 			}
 
 			cp = Find_node_in_mongo(cp.PID, cat_col)
 		}
 		lp = Find_node_in_mongo(lp.PID, loc_col)
 	}
-	return -1
+	return -1, 0, 0
 }
 
-func SearchInMongoDiscount(category_id int64, location_id int64, cat_col mongo.Collection, loc_col mongo.Collection, segment int64) int64 {
+func SearchInMongoDiscount(category_id int64, location_id int64, cat_col mongo.Collection, loc_col mongo.Collection, segment int64) (int64, int64, int64) {
 	cp := Find_node_in_mongo(category_id, cat_col)
 	lp := Find_node_in_mongo(location_id, loc_col)
 	var price int64
@@ -120,12 +120,12 @@ func SearchInMongoDiscount(category_id int64, location_id int64, cat_col mongo.C
 		for cp.PID != 0 {
 			price = SelectDiscount(segment, cp.ID, lp.ID)
 			if price > 0 {
-				return price
+				return price, cp.ID, lp.ID
 			}
 
 			cp = Find_node_in_mongo(cp.PID, cat_col)
 		}
 		lp = Find_node_in_mongo(lp.PID, loc_col)
 	}
-	return -1
+	return -1, 0, 0
 }

@@ -13,10 +13,14 @@ func GetPrice(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Invalid data")
 	}
 
-	// TODO : GetPrice(request)
+	price, category, location, matrixId, UserSegmentId := db.GetPrice(request)
 
-	response := structures.Response{}
-	// GetPrice(&response)
+	response := structures.Response{
+		Price:         price,
+		LocationId:    category,
+		MicroCategory: location,
+		MatrixId:      matrixId,
+		UserSegmentId: UserSegmentId}
 
 	return c.JSON(http.StatusOK, response)
 }

@@ -13,11 +13,10 @@ import (
 var wg sync.WaitGroup
 var STORAGE CurrentStorage
 
-func GetPrice(request structures.Request) structures.Response {
+func GetPrice(request structures.Request) (uint64, uint64, uint64, uint64, uint64) {
 	client := Open_bd()
 	segments := GetSegmentsByUserID(request.UserId)
 	sort.Slice(segments, func(i, j int) bool { return segments[i] > segments[j] })
-	var response structures.Response
 
 	if segments != nil {
 		for _, segment := range segments {
@@ -26,9 +25,9 @@ func GetPrice(request structures.Request) structures.Response {
 			if res == true {
 				cat_col := client.Database("main_db").Collection(coll.Category_name)
 				loc_col := client.Database("main_db").Collection(coll.Location_name)
-				price := SearchInMongoDiscount(int64(request.MicroCategoryId), int64(request.LocationId), *cat_col, *loc_col, int64(segment))
+				price, category, location := SearchInMongoDiscount(int64(request.MicroCategoryId), int64(request.LocationId), *cat_col, *loc_col, int64(segment))
 				if price >= 0 {
-					// TODO Соствить response
+					return uint64(price), uint64(category), uint64(location), STORAGE.Discounts[segment], segment
 				}
 			}
 
@@ -36,16 +35,16 @@ func GetPrice(request structures.Request) structures.Response {
 
 	}
 
-	// Todo search in storage of baseline
 	coll, _ := Find_in_mongo_collections(0)
 
 	cat_col := client.Database("main_db").Collection(coll.Category_name)
 	loc_col := client.Database("main_db").Collection(coll.Location_name)
 
-	price := SearchInMongoBaseline(int64(request.MicroCategoryId), int64(request.LocationId), *cat_col, *loc_col)
+	price, category, location := SearchInMongoBaseline(int64(request.MicroCategoryId), int64(request.LocationId), *cat_col, *loc_col)
 
 	Close_db(client)
-	return response
+	return uint64(price), uint64(category), uint64(location), STORAGE.Baseline, -1
+
 }
 
 func UpdateStorage() {
@@ -437,10 +436,10 @@ func GetArrayOfDiscount(dp uint64) ([][]int64, error) {
 	return data, nil
 }
 
-func SelectBaseline(microcategory int64, location int64) (int64, error) {
+func SelectBaseline(microcategory int64, location int64) int64 {
 	db, err := sql.Open("mysql", connection)
 	if err != nil {
-		return 0, err
+		print(err)
 	}
 	defer db.Close()
 
@@ -450,16 +449,16 @@ func SelectBaseline(microcategory int64, location int64) (int64, error) {
 
 	err = db.QueryRow(query, microcategory, location).Scan(&price)
 	if err != nil {
-		return 0, err
+		print(err)
 	}
 
-	return price, nil
+	return price
 }
 
-func SelectDiscount(segment int64, microcategory int64, location int64) (int64, error) {
+func SelectDiscount(segment int64, microcategory int64, location int64) int64 {
 	db, err := sql.Open("mysql", connection)
 	if err != nil {
-		return 0, err
+		print(err)
 	}
 	defer db.Close()
 
@@ -469,8 +468,8 @@ func SelectDiscount(segment int64, microcategory int64, location int64) (int64, 
 
 	err = db.QueryRow(query, microcategory, location).Scan(&price)
 	if err != nil {
-		return 0, err
+		print(err)
 	}
 
-	return price, nil
+	return price
 }
