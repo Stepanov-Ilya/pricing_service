@@ -7,8 +7,55 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"strconv"
 )
 
+var MONGO_ID int64 = 0
+
+type MONGO_COLLECTION struct {
+	id            int64
+	segment       int64
+	Location_name string
+	Category_name string
+}
+
+var MONGO_COLLECTIONS = []*MONGO_COLLECTION{}
+var void_mg = &MONGO_COLLECTION{id: -1, segment: -1, Location_name: "", Category_name: ""}
+
+func NewMongoBaseline() *MONGO_COLLECTION {
+	MONGO_ID++
+	mg := &MONGO_COLLECTION{
+		id:            MONGO_ID,
+		segment:       0,
+		Location_name: "location_" + strconv.FormatInt(segment, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
+		Category_name: "category_" + strconv.FormatInt(segment, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
+	}
+	MONGO_COLLECTIONS = append(MONGO_COLLECTIONS, mg)
+	return mg
+}
+func NewMongoCollection(segment int64) *MONGO_COLLECTION {
+	MONGO_ID++
+	mg := &MONGO_COLLECTION{
+		id:            MONGO_ID,
+		segment:       segment,
+		Location_name: "location_" + strconv.FormatInt(segment, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
+		Category_name: "category_" + strconv.FormatInt(segment, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
+	}
+	MONGO_COLLECTIONS = append(MONGO_COLLECTIONS, mg)
+	return mg
+}
+
+func CleanMongoCollections() {
+	MONGO_COLLECTIONS = []*MONGO_COLLECTION{}
+}
+func Find_in_mongo_collections(segment int64) (MONGO_COLLECTION, bool) {
+	for _, coll := range MONGO_COLLECTIONS {
+		if coll.segment == segment {
+			return *coll, true
+		}
+	}
+	return *void_mg, false
+}
 func Open_bd() mongo.Client {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
 	if err != nil {

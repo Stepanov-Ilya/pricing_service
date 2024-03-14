@@ -51,6 +51,8 @@ func AddDiscounts(c echo.Context) error {
 }
 
 func UpdateStorage(c echo.Context) error {
+	db.CleanMongoCollections()
+	db.NewMongoBaseline()
 
 	db.UpdateStorage()
 

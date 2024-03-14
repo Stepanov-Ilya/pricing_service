@@ -14,24 +14,37 @@ var wg sync.WaitGroup
 var STORAGE CurrentStorage
 
 func GetPrice(request structures.Request) structures.Response {
-	discountIds := GetSegmentsByUserID(request.UserId)
-	sort.Slice(discountIds, func(i, j int) bool { return discountIds[i] > discountIds[j] })
+	client := Open_bd()
+	segments := GetSegmentsByUserID(request.UserId)
+	sort.Slice(segments, func(i, j int) bool { return segments[i] > segments[j] })
 	var response structures.Response
-	if discountIds != nil {
-		//TODO
-		//for _, discountId := range discountIds {
-		//	// Todo search in storage of discount
-		//	// FindInDiscount(&response, discountId, request.LocationId, request.MicroCategoryId)
-		//	// if response != nil {
-		//	//	return response
-		//	//}
-		//
-		//}
+
+	if segments != nil {
+		for _, segment := range segments {
+			coll, res := Find_in_mongo_collections(int64(segment))
+
+			if res == true {
+				cat_col := client.Database("main_db").Collection(coll.Category_name)
+				loc_col := client.Database("main_db").Collection(coll.Location_name)
+				price := SearchInMongoDiscount(int64(request.MicroCategoryId), int64(request.LocationId), *cat_col, *loc_col, int64(segment))
+				if price >= 0 {
+					// TODO Соствить response
+				}
+			}
+
+		}
+
 	}
 
 	// Todo search in storage of baseline
-	//FindInBaseline(&response, request.LocationId, request.MicroCategoryId)
+	coll, _ := Find_in_mongo_collections(0)
 
+	cat_col := client.Database("main_db").Collection(coll.Category_name)
+	loc_col := client.Database("main_db").Collection(coll.Location_name)
+
+	price := SearchInMongoBaseline(int64(request.MicroCategoryId), int64(request.LocationId), *cat_col, *loc_col)
+
+	Close_db(client)
 	return response
 }
 
@@ -87,6 +100,7 @@ func UpdateDiscounts() {
 		wg.Add(1)
 		UpdateDiscountsMatrix(segment)
 		STORAGE.Discounts[segment] = STORAGE.MaxDiscount
+		NewMongoCollection(int64(segment))
 	}
 
 	defer wg.Done()

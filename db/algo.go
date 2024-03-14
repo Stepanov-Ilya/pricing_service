@@ -8,7 +8,6 @@ import (
 )
 
 func Update_pids_in_mongo(cat_col mongo.Collection, loc_col mongo.Collection, matrix [][3]int64) {
-	// Заполнить корневые каталоги
 	var category_id, location_id int64
 
 	sort.Slice(matrix, func(i, j int) bool {
@@ -95,6 +94,38 @@ func change_pid(collection mongo.Collection, id int64, pid int64) {
 	}
 }
 
-func GetData(category_id int64, location_id int64, discount_segments []int) int64 {
+func SearchInMongoBaseline(category_id int64, location_id int64, cat_col mongo.Collection, loc_col mongo.Collection) int64 {
+	cp := Find_node_in_mongo(category_id, cat_col)
+	lp := Find_node_in_mongo(location_id, loc_col)
+	var price int64
+	for lp.PID != 0 {
+		for cp.PID != 0 {
+			price = SelectBaseline(cp.ID, lp.ID)
+			if price > 0 {
+				return price
+			}
 
+			cp = Find_node_in_mongo(cp.PID, cat_col)
+		}
+		lp = Find_node_in_mongo(lp.PID, loc_col)
+	}
+	return -1
+}
+
+func SearchInMongoDiscount(category_id int64, location_id int64, cat_col mongo.Collection, loc_col mongo.Collection, segment int64) int64 {
+	cp := Find_node_in_mongo(category_id, cat_col)
+	lp := Find_node_in_mongo(location_id, loc_col)
+	var price int64
+	for lp.PID != 0 {
+		for cp.PID != 0 {
+			price = SelectDiscount(segment, cp.ID, lp.ID)
+			if price > 0 {
+				return price
+			}
+
+			cp = Find_node_in_mongo(cp.PID, cat_col)
+		}
+		lp = Find_node_in_mongo(lp.PID, loc_col)
+	}
+	return -1
 }
