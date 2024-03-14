@@ -93,6 +93,7 @@ func change_pid(collection mongo.Collection, id int64, pid int64) {
 		panic(err)
 	}
 }
+<<<<<<< HEAD
 
 func SearchInMongoBaseline(category_id int64, location_id int64, cat_col mongo.Collection, loc_col mongo.Collection) int64 {
 	cp := Find_node_in_mongo(category_id, cat_col)
@@ -129,3 +130,5 @@ func SearchInMongoDiscount(category_id int64, location_id int64, cat_col mongo.C
 	}
 	return -1
 }
+=======
+>>>>>>> 6594be2e78f055187a8772d0f01c7096f6ad70db
