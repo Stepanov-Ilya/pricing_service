@@ -422,3 +422,41 @@ func GetArrayOfDiscount(dp uint64) ([][]int64, error) {
 
 	return data, nil
 }
+
+func SelectBaseline(microcategory int64, location int64) (int64, error) {
+	db, err := sql.Open("mysql", connection)
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+
+	var price int64
+
+	query := "SELECT price FROM baseline_matrix_" + strconv.FormatUint(STORAGE.Baseline, 10) + " WHERE microcategory = ? AND location = ?"
+
+	err = db.QueryRow(query, microcategory, location).Scan(&price)
+	if err != nil {
+		return 0, err
+	}
+
+	return price, nil
+}
+
+func SelectDiscount(segment int64, microcategory int64, location int64) (int64, error) {
+	db, err := sql.Open("mysql", connection)
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+
+	var price int64
+
+	query := "SELECT price FROM discount_matrix_" + strconv.FormatUint(STORAGE.Discounts[uint64(segment)], 10) + " WHERE microcategory = ? AND location = ?"
+
+	err = db.QueryRow(query, microcategory, location).Scan(&price)
+	if err != nil {
+		return 0, err
+	}
+
+	return price, nil
+}

@@ -94,7 +94,3 @@ func change_pid(collection mongo.Collection, id int64, pid int64) {
 		panic(err)
 	}
 }
-
-func GetData(category_id int64, location_id int64, discount_segments []int) int64 {
-
-}
