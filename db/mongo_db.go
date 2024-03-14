@@ -36,13 +36,24 @@ func NewMongoBaseline() *MONGO_COLLECTION {
 }
 func NewMongoCollection(segment int64) *MONGO_COLLECTION {
 	MONGO_ID++
+
 	mg := &MONGO_COLLECTION{
 		id:            MONGO_ID,
 		segment:       segment,
 		Location_name: "location_" + strconv.FormatInt(segment, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
 		Category_name: "category_" + strconv.FormatInt(segment, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
 	}
+	client := Open_bd()
+
+	loc_col := client.Database("main_db").Collection(mg.Location_name)
+	cat_col := client.Database("main_db").Collection(mg.Category_name)
+
+	GetLocationsTree(*loc_col)  // Загрузка стартовых даннных в бд
+	GetCategoriesTree(*cat_col) // Загрузка стартовых даннных в бд
+
 	MONGO_COLLECTIONS = append(MONGO_COLLECTIONS, mg)
+
+	Close_db(client)
 	return mg
 }
 
@@ -87,24 +98,25 @@ func Close_db(client mongo.Client) {
 
 // Заполняет БД (c нуля)
 func Start_database(client mongo.Client) {
-
-	loc_col := client.Database("main_db").Collection("LocationNode")
-	cat_col := client.Database("main_db").Collection("CategoryNode")
+	loc_col := client.Database("main_db").Collection("location")
+	cat_col := client.Database("main_db").Collection("category")
 
 	Clean_all(*loc_col)
 	Clean_all(*cat_col)
 
-	GetLocationsTree(*loc_col)  // Загрузка стартовых даннных в бд (запускать один раз!)
-	GetCategoriesTree(*cat_col) // Загрузка стартовых даннных в бд (запускать один раз!)
+	GetLocationsTree(*loc_col)  // Загрузка стартовых даннных в бд
+	GetCategoriesTree(*cat_col) // Загрузка стартовых даннных в бд
 
 }
 
-func return_selectors_from_trees() {
+func ReturnJSONForSelector_Location() structures.Selectors {
+	var selectors []structures.Selector
 	client := Open_bd()
 
 	options := options.Find()
 	filter := bson.D{}
-	coll
+	collection := client.Database("main_db").Collection("location")
+
 	var results []*Node
 
 	cur, err := collection.Find(context.TODO(), filter, options)
@@ -124,6 +136,7 @@ func return_selectors_from_trees() {
 			Id:   uint64(elem.ID),
 			Name: elem.Name,
 		}
+		selectors = append(selectors, selector)
 	}
 
 	if err := cur.Err(); err != nil {
@@ -131,8 +144,48 @@ func return_selectors_from_trees() {
 	}
 
 	cur.Close(context.TODO())
-
 	Close_db(client)
+
+	return *structures.CreateNewSelectors(selectors)
+}
+func ReturnJSONForSelector_Category() structures.Selectors {
+	var selectors []structures.Selector
+	client := Open_bd()
+
+	options := options.Find()
+	filter := bson.D{}
+	collection := client.Database("main_db").Collection("category")
+
+	var results []*Node
+
+	cur, err := collection.Find(context.TODO(), filter, options)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for cur.Next(context.TODO()) {
+		var elem Node
+		err := cur.Decode(&elem)
+		if err == nil {
+			log.Fatal(err)
+		}
+
+		results = append(results, &elem)
+		selector := structures.Selector{
+			Id:   uint64(elem.ID),
+			Name: elem.Name,
+		}
+		selectors = append(selectors, selector)
+	}
+
+	if err := cur.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	cur.Close(context.TODO())
+	Close_db(client)
+
+	return *structures.CreateNewSelectors(selectors)
 }
 
 func Find_node_in_mongo(id int64, collection mongo.Collection) *Node {

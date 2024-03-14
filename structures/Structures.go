@@ -31,3 +31,11 @@ type Selector struct {
 	Id   uint64 `json:"id"`
 	Name string `json:"name"`
 }
+
+type Selectors struct {
+	value []Selector `json:"value"`
+}
+
+func CreateNewSelectors(s []Selector) *Selectors {
+	return &Selectors{value: s}
+}

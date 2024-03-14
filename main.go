@@ -1,6 +1,5 @@
 package main
 
-
 import (
 	"purple_hack_tree/db"
 	"purple_hack_tree/service"
@@ -11,7 +10,7 @@ import (
 func main() {
 	client := db.Open_bd()
 
-	//db.Start_database(client)
+	db.Start_database(client)
 
 	db.CreateProcessBd()
 	db.GetCurrentStorage()
