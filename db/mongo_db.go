@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"purple_hack_tree/structures"
 	"strconv"
 )
 
@@ -27,8 +28,8 @@ func NewMongoBaseline() *MONGO_COLLECTION {
 	mg := &MONGO_COLLECTION{
 		id:            MONGO_ID,
 		segment:       0,
-		Location_name: "location_" + strconv.FormatInt(segment, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
-		Category_name: "category_" + strconv.FormatInt(segment, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
+		Location_name: "location_" + strconv.FormatInt(0, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
+		Category_name: "category_" + strconv.FormatInt(0, 10) + "_" + strconv.FormatInt(MONGO_ID, 10),
 	}
 	MONGO_COLLECTIONS = append(MONGO_COLLECTIONS, mg)
 	return mg
@@ -98,10 +99,12 @@ func Start_database(client mongo.Client) {
 
 }
 
-func read_db(collection mongo.Collection) {
+func return_selectors_from_trees() {
+	client := Open_bd()
+
 	options := options.Find()
 	filter := bson.D{}
-
+	coll
 	var results []*Node
 
 	cur, err := collection.Find(context.TODO(), filter, options)
@@ -117,13 +120,9 @@ func read_db(collection mongo.Collection) {
 		}
 
 		results = append(results, &elem)
-		if len(elem.Children) > 0 {
-			fmt.Println(elem.Name)
-			fmt.Print("-> ")
-			for _, loc := range elem.Children {
-				fmt.Print(loc.Name, " ")
-			}
-			fmt.Println("\n")
+		selector := structures.Selector{
+			Id:   uint64(elem.ID),
+			Name: elem.Name,
 		}
 	}
 
@@ -132,6 +131,8 @@ func read_db(collection mongo.Collection) {
 	}
 
 	cur.Close(context.TODO())
+
+	Close_db(client)
 }
 
 func Find_node_in_mongo(id int64, collection mongo.Collection) *Node {

@@ -26,3 +26,8 @@ type Discounts struct {
 	MicroCategoryId uint64 `json:"microcategory_id"`
 	Price           uint64 `json:"price"`
 }
+
+type Selector struct {
+	Id   uint64 `json:"id"`
+	Name string `json:"name"`
+}
